@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Annadata Setu — Procurement Centre Queue &amp; Payment Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;700&family=Noto+Sans+Kannada:wght@400;500;700&family=Noto+Sans+Gurmukhi:wght@400;500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#E8EBE1; --surface:#FFFFFF; --surface-2:#F3F5EE; --sunk:#DDE2D4;
+  --ink:#17211B; --muted:#5C6B5F; --line:#CBD3C1;
+  --green:#1B5E3A; --green-2:#25764A; --turmeric:#D98324; --turmeric-soft:#FBEBD6;
+  --ok:#1B7A44; --ok-soft:#DFF0E4; --warn:#9A6207; --warn-soft:#FBEED2;
+  --bad:#A32B20; --bad-soft:#F7DFDC; --board:#12241A; --board-text:#F2C14E;
+  --r-card:14px; --r-pill:999px;
+  --shadow:0 1px 2px rgba(23,33,27,.08), 0 8px 24px -14px rgba(23,33,27,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#111A14; --surface:#18231C; --surface-2:#1E2B23; --sunk:#0D150F;
+    --ink:#E8EEE6; --muted:#9AAB9E; --line:#2C3C32;
+    --green:#5FBF8A; --green-2:#7FD3A3; --turmeric:#E8A24E; --turmeric-soft:#3A2A14;
+    --ok:#69C48F; --ok-soft:#16301F; --warn:#E0B357; --warn-soft:#33270D;
+    --bad:#E9897C; --bad-soft:#3A1C18; --board:#0A140E; --board-text:#F2C14E;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --page:#111A14; --surface:#18231C; --surface-2:#1E2B23; --sunk:#0D150F;
+  --ink:#E8EEE6; --muted:#9AAB9E; --line:#2C3C32;
+  --green:#5FBF8A; --green-2:#7FD3A3; --turmeric:#E8A24E; --turmeric-soft:#3A2A14;
+  --ok:#69C48F; --ok-soft:#16301F; --warn:#E0B357; --warn-soft:#33270D;
+  --bad:#E9897C; --bad-soft:#3A1C18; --board:#0A140E; --board-text:#F2C14E;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -16px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--page); color:var(--ink); font-family:"Noto Sans","Noto Sans Devanagari","Noto Sans Kannada","Noto Sans Gurmukhi",system-ui,sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:Archivo,"Noto Sans",system-ui,sans-serif; line-height:1.15; margin:0; letter-spacing:-.015em; font-weight:700}
+h1{font-size:clamp(28px,5vw,44px)} h2{font-size:clamp(20px,3vw,26px)} h3{font-size:18px} h4{font-size:15px}
+p{margin:0 0 .7em} a{color:var(--green)}
+:lang(hi) h1,:lang(kn) h1,:lang(pa) h1,:lang(mr) h1,
+:lang(hi) h2,:lang(kn) h2,:lang(pa) h2,:lang(mr) h2{font-family:"Noto Sans Devanagari","Noto Sans Kannada","Noto Sans Gurmukhi","Noto Sans",sans-serif;letter-spacing:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--turmeric); outline-offset:2px; border-radius:4px}
+.mono{font-family:"Roboto Mono",ui-monospace,monospace}
+
+/* layout */
+.wrap{max-width:1140px;margin:0 auto;padding:0 18px}
+.narrow{max-width:760px;margin:0 auto;padding:0 18px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.grid{display:grid;gap:14px}
+@media(min-width:720px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}}
+.stack>*+*{margin-top:14px}
+.hide-sm{display:none}
+@media(min-width:840px){.hide-sm{display:block}}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar-in{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 18px;max-width:1140px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-family:Archivo;font-weight:700;font-size:17px;letter-spacing:-.02em}
+.seal{width:32px;height:32px;border-radius:8px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:15px;flex:none}
+.brand small{display:block;font-family:"Noto Sans";font-weight:400;font-size:11px;color:var(--muted);letter-spacing:0}
+
+/* controls */
+.btn{border:1px solid var(--green);background:var(--green);color:#fff;padding:10px 16px;border-radius:var(--r-pill);font-weight:600;cursor:pointer;font-size:15px}
+.btn:hover{background:var(--green-2);border-color:var(--green-2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--green);border-color:var(--line)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.warn{background:var(--turmeric);border-color:var(--turmeric);color:#231403}
+.btn.danger{background:transparent;color:var(--bad);border-color:var(--bad)}
+.btn.sm{padding:6px 12px;font-size:13.5px}
+.btn.block{width:100%;justify-content:center}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-size:13.5px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.input,select.input,textarea.input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);}
+.input:focus{border-color:var(--green)}
+select.lang{padding:7px 10px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--surface-2);font-size:14px;font-weight:500}
+.icon-btn{border:1px solid var(--line);background:var(--surface-2);width:34px;height:34px;border-radius:50%;cursor:pointer;display:grid;place-items:center;font-size:15px}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:18px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none}
+.card.tight{padding:14px}
+.sunk{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px}
+.tag{display:inline-block;padding:3px 10px;border-radius:var(--r-pill);font-size:12.5px;font-weight:600;background:var(--surface-2);border:1px solid var(--line)}
+.tag.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.tag.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tag.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.tag.info{background:var(--turmeric-soft);color:var(--warn);border-color:transparent}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.tiny{font-size:12px}
+hr.sep{border:0;border-top:1px dashed var(--line);margin:14px 0}
+
+/* queue board — the hero */
+.board{background:var(--board);border-radius:16px;padding:22px;color:#EFF3EA;position:relative;overflow:hidden}
+.board:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);pointer-events:none}
+.board-label{font-size:12.5px;color:#9DB3A4;font-weight:600;margin-bottom:2px}
+.board-num{font-family:"Roboto Mono";font-weight:700;font-size:clamp(40px,10vw,76px);color:var(--board-text);line-height:1;letter-spacing:.02em;text-shadow:0 0 22px rgba(242,193,78,.25)}
+.board-grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:680px){.board-grid{grid-template-columns:1.2fr 1fr}}
+.board-mini{display:flex;gap:18px;flex-wrap:wrap}
+.board-mini div b{display:block;font-family:"Roboto Mono";font-size:22px;color:#EFF3EA}
+.board-mini div span{font-size:12px;color:#9DB3A4}
+
+/* token slip */
+.slip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;position:relative}
+.slip:after,.slip:before{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:var(--page);top:50%;transform:translateY(-50%);border:1px solid var(--line)}
+.slip:before{left:-9px;border-right-color:transparent;clip-path:inset(0 0 0 50%)}
+.slip:after{right:-9px;border-left-color:transparent;clip-path:inset(0 50% 0 0)}
+.slip .tok{font-family:"Roboto Mono";font-weight:700;font-size:26px;letter-spacing:.04em}
+
+/* progress / bars */
+.bar{height:9px;background:var(--sunk);border-radius:var(--r-pill);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:var(--r-pill);transition:width .5s ease}
+.bar i.hot{background:var(--bad)} .bar i.mid{background:var(--turmeric)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;overflow-x:auto;padding:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-pill);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:transparent;padding:8px 15px;border-radius:var(--r-pill);cursor:pointer;font-weight:600;font-size:14px;white-space:nowrap;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--green);color:#fff}
+
+/* table */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:12.5px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+
+/* steps */
+.steps{display:flex;gap:0;flex-wrap:wrap}
+.step{flex:1;min-width:96px;padding:9px 6px;border-top:4px solid var(--sunk);font-size:12.5px;color:var(--muted)}
+.step.done{border-top-color:var(--green);color:var(--ink);font-weight:600}
+.step.now{border-top-color:var(--turmeric);color:var(--ink);font-weight:700}
+
+/* sms */
+.sms{background:var(--surface-2);border:1px solid var(--line);border-left:4px solid var(--green);border-radius:0 10px 10px 0;padding:11px 13px}
+.sms.unread{border-left-color:var(--turmeric);background:var(--turmeric-soft)}
+
+/* misc */
+.notice{background:var(--turmeric-soft);border:1px solid color-mix(in srgb,var(--turmeric) 40%,transparent);border-radius:10px;padding:11px 13px;font-size:14px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--board);color:#fff;padding:12px 20px;border-radius:var(--r-pill);z-index:99;box-shadow:var(--shadow);font-weight:600;font-size:14.5px;max-width:92vw;text-align:center}
+.slot{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:11px;cursor:pointer;text-align:left;width:100%}
+.slot[aria-pressed="true"]{border-color:var(--green);background:var(--ok-soft);box-shadow:inset 0 0 0 1px var(--green)}
+.slot:disabled{opacity:.5;cursor:not-allowed}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.kv:last-child{border-bottom:0}
+.cipher{font-family:"Roboto Mono";font-size:11.5px;word-break:break-all;color:var(--muted);background:var(--sunk);padding:8px;border-radius:8px;max-height:96px;overflow:auto}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--turmeric);display:inline-block;animation:p 1.8s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.footer{padding:26px 0;color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:34px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useMemo,useRef,useCallback} = React;
+
+/* ============================================================
+   1. MULTILINGUAL LAYER (i18n)
+   ============================================================ */
+const LANGS = [
+  {code:"en", label:"English"},
+  {code:"hi", label:"हिन्दी"},
+  {code:"kn", label:"ಕನ್ನಡ"},
+  {code:"pa", label:"ਪੰਜਾਬੀ"},
+  {code:"mr", label:"मराठी"}
+];
+
+const STR = {
+en:{
+ app:"Annadata Setu", tagline:"Procurement centre queue, storage and payment tracker",
+ heroTitle:"Book your turn. Skip the overnight queue.",
+ heroBody:"Reserve a weighing slot at your procurement centre, watch the live token board from home, and follow your payment until the money lands in your account.",
+ farmerEntry:"I am a farmer", farmerEntrySub:"Register, book a slot, track payment",
+ adminEntry:"I run a centre", adminEntrySub:"Manage queue, weighing and storage",
+ nowServing:"Now serving", atCentre:"at", waiting:"In queue", avgWait:"Average wait", storageFree:"Storage free",
+ liveBoard:"Live token board", pickCentre:"Choose a centre",
+ f1:"One slot, one token", f1b:"Pick a date and a two-hour window. Your token number is fixed the moment you book.",
+ f2:"Alerts in your language", f2b:"An SMS when your booking is confirmed, when three farmers are ahead of you, and when payment is released.",
+ f3:"Money you can follow", f3b:"Weighed quantity, grade, rate and UTR number — every step visible instead of a rumour.",
+ f4:"Storage before you travel", f4b:"See how full the godown is before loading the tractor, so you are not turned away at the gate.",
+ login:"Log in", register:"Register", logout:"Log out", back:"Back", cancel:"Cancel", save:"Save", close:"Close",
+ phone:"Mobile number", pin:"4-digit PIN", confirmPin:"Confirm PIN", name:"Full name", village:"Village", district:"District",
+ crop:"Crop", acres:"Land (acres)", aadhaar:"Aadhaar number", bank:"Bank account number", lang:"Preferred language",
+ createAccount:"Create account", haveAccount:"Already registered? Log in", newHere:"New here? Register",
+ farmerLogin:"Farmer log in", farmerRegister:"Farmer registration",
+ adminLogin:"Centre staff log in", username:"Staff ID", adminHint:"Demo staff ID: officer · PIN: 1234",
+ home:"Home", book:"Book slot", queue:"Live queue", status:"My crop &amp; payment", alerts:"Alerts", profile:"Profile",
+ dashboard:"Overview", qmgmt:"Queue", weighing:"Weighing", centres:"Centres &amp; storage", farmers:"Farmers", broadcast:"Send alert", security:"Security",
+ greet:"Namaste", yourNextVisit:"Your next visit", noBooking:"No slot booked yet", bookNow:"Book a slot",
+ bookAt:"Book a weighing slot", step1:"Pick a centre", step2:"Pick a date", step3:"Pick a time window",
+ expectedQty:"Quantity you will bring (quintals)", confirmBooking:"Confirm booking", slotsLeft:"left", slotFull:"Full",
+ booked:"Booked", token:"Token", date:"Date", time:"Time", centre:"Centre", rate:"Rate", quantity:"Quantity",
+ bookingDone:"Slot booked. Token issued.", yourToken:"Your token", showAtGate:"Show this at the gate",
+ aheadOfYou:"Farmers ahead of you", estWait:"Estimated wait", minutes:"min", position:"Your position",
+ called:"You are being called now. Please move to the weighing platform.", arriveBy:"Reach the centre by",
+ cancelBooking:"Cancel booking", cancelled:"Cancelled", noShow:"Missed", served:"Weighed", arrived:"Arrived",
+ statusBooked:"Slot booked", statusArrived:"Arrived at centre", statusWeighed:"Weighed &amp; graded", statusAccepted:"Accepted into storage",
+ statusPayPending:"Payment pending", statusPaid:"Payment credited",
+ payment:"Payment", amount:"Amount", grade:"Grade", moisture:"Moisture", utr:"UTR number", paidOn:"Credited on",
+ noRecords:"Nothing here yet. Book a slot and it will show up.",
+ noAlerts:"No messages yet.", markRead:"Mark all read",
+ storage:"Storage", capacity:"Capacity", used:"Filled", storageWarn:"Godown almost full — call the centre before loading",
+ todayBookings:"Today's bookings", servedToday:"Weighed today", inQueue:"Waiting now", paidOut:"Paid out today",
+ callNext:"Call next token", nowCalling:"Now calling", queueEmpty:"Queue is clear.", markArrived:"Arrived", markNoShow:"Missed",
+ recordWeighing:"Record weighing", netQty:"Net quantity (quintals)", moisturePct:"Moisture %", ratePerQ:"Rate per quintal",
+ payable:"Payable amount", accept:"Accept &amp; move to storage", releasePayment:"Release payment", markPaid:"Mark as paid",
+ pendingPayments:"Payments to release", noPending:"All payments settled.",
+ msgTitle:"Message to farmers", msgBody:"Write the message", sendTo:"Send to", allFarmers:"All registered farmers",
+ send:"Send alert", sentTo:"Alert sent to", peopleShort:"farmers",
+ encTitle:"How this data is protected", 
+ encBody:"PINs are never stored. Each PIN is salted and stretched with PBKDF2-SHA256 over 150,000 iterations, and only the digest is kept. Aadhaar numbers, mobile numbers and bank accounts are encrypted with AES-GCM 256-bit before they are written to storage, each field with its own random 96-bit nonce.",
+ encReveal:"Reveal", encHide:"Hide", encStored:"What is actually stored", encPlain:"Decrypted value",
+ addCentre:"Add centre", centreName:"Centre name", perSlot:"Farmers per time window", svcTime:"Minutes per farmer", storageCap:"Storage capacity (quintals)",
+ deleteCentre:"Remove", updated:"Saved.", noFarmers:"No farmers registered yet.",
+ errPhone:"Enter a 10-digit mobile number.", errPin:"PIN must be 4 digits.", errPinMatch:"The two PINs do not match.",
+ errExists:"This mobile number is already registered.", errNoUser:"No account found for this number.", errWrong:"Wrong PIN.",
+ errName:"Enter your name.", errQty:"Enter the quantity in quintals.", errSlot:"Pick a date and time window first.",
+ errFull:"That window just filled up. Pick another.", errMsg:"Write a message first.",
+ confirmCancel:"Cancel this booking? Your token will be released to another farmer.",
+ demoNote:"Demo build — data stays in this browser only. Nothing is sent to a server.",
+ resetDemo:"Reset demo data", resetDone:"Demo data reset.", theme:"Theme",
+ bookedFor:"Booked for", quintals:"qtl", searchFarmer:"Search by name, village or token",
+ smsPreview:"SMS preview", sentAt:"Sent", channel:"Channel", sms:"SMS", push:"App alert",
+ msgBooked:"Slot booked at {c} on {d}, {t}. Token {k}. Show this SMS at the gate.",
+ msgNear:"Token {k} — three farmers ahead of you at {c}. Please reach the weighing platform.",
+ msgCalled:"Token {k} is being called now at {c}. Proceed to the weighing platform.",
+ msgWeighed:"Token {k}: {q} qtl accepted at Rs {r}/qtl. Payable Rs {a}. Payment will follow.",
+ msgPaid:"Rs {a} credited to your bank account for token {k}. UTR {u}.",
+ msgStorage:"{c} godown is {p}% full. Confirm space before loading your tractor."
+},
+hi:{
+ app:"अन्नदाता सेतु", tagline:"खरीद केंद्र की कतार, भंडारण और भुगतान की जानकारी",
+ heroTitle:"अपनी बारी पहले से बुक करें। रातभर की कतार से बचें।",
+ heroBody:"अपने खरीद केंद्र पर तौल का समय आरक्षित करें, घर बैठे लाइव टोकन बोर्ड देखें, और पैसा खाते में आने तक भुगतान की स्थिति देखें।",
+ farmerEntry:"मैं किसान हूँ", farmerEntrySub:"पंजीकरण, स्लॉट बुकिंग, भुगतान",
+ adminEntry:"मैं केंद्र चलाता हूँ", adminEntrySub:"कतार, तौल और भंडारण प्रबंधन",
+ nowServing:"अभी बुलाया जा रहा है", atCentre:"केंद्र", waiting:"कतार में", avgWait:"औसत प्रतीक्षा", storageFree:"खाली भंडारण",
+ liveBoard:"लाइव टोकन बोर्ड", pickCentre:"केंद्र चुनें",
+ f1:"एक स्लॉट, एक टोकन", f1b:"तारीख और दो घंटे का समय चुनें। बुकिंग करते ही आपका टोकन नंबर तय हो जाता है।",
+ f2:"आपकी भाषा में सूचना", f2b:"बुकिंग की पुष्टि पर, आपसे तीन किसान आगे रहने पर, और भुगतान जारी होने पर एसएमएस।",
+ f3:"भुगतान पर नज़र", f3b:"तौल, ग्रेड, दर और यूटीआर नंबर — हर चरण साफ़ दिखता है।",
+ f4:"चलने से पहले भंडारण देखें", f4b:"ट्रैक्टर लादने से पहले देखें कि गोदाम कितना भरा है, ताकि गेट से वापस न लौटना पड़े।",
+ login:"लॉग इन", register:"पंजीकरण", logout:"लॉग आउट", back:"वापस", cancel:"रद्द करें", save:"सहेजें", close:"बंद करें",
+ phone:"मोबाइल नंबर", pin:"4 अंकों का पिन", confirmPin:"पिन दोबारा", name:"पूरा नाम", village:"गाँव", district:"ज़िला",
+ crop:"फसल", acres:"ज़मीन (एकड़)", aadhaar:"आधार नंबर", bank:"बैंक खाता नंबर", lang:"भाषा",
+ createAccount:"खाता बनाएँ", haveAccount:"पहले से पंजीकृत? लॉग इन करें", newHere:"नए हैं? पंजीकरण करें",
+ farmerLogin:"किसान लॉग इन", farmerRegister:"किसान पंजीकरण",
+ adminLogin:"केंद्र कर्मचारी लॉग इन", username:"कर्मचारी आईडी", adminHint:"डेमो आईडी: officer · पिन: 1234",
+ home:"होम", book:"स्लॉट बुक करें", queue:"लाइव कतार", status:"फसल और भुगतान", alerts:"सूचनाएँ", profile:"प्रोफ़ाइल",
+ dashboard:"सारांश", qmgmt:"कतार", weighing:"तौल", centres:"केंद्र और भंडारण", farmers:"किसान", broadcast:"सूचना भेजें", security:"सुरक्षा",
+ greet:"नमस्ते", yourNextVisit:"अगली बारी", noBooking:"अभी कोई स्लॉट बुक नहीं है", bookNow:"स्लॉट बुक करें",
+ bookAt:"तौल का स्लॉट बुक करें", step1:"केंद्र चुनें", step2:"तारीख चुनें", step3:"समय चुनें",
+ expectedQty:"कितना लाएँगे (क्विंटल)", confirmBooking:"बुकिंग पक्की करें", slotsLeft:"बाकी", slotFull:"भरा हुआ",
+ booked:"बुक", token:"टोकन", date:"तारीख", time:"समय", centre:"केंद्र", rate:"दर", quantity:"मात्रा",
+ bookingDone:"स्लॉट बुक हो गया। टोकन जारी।", yourToken:"आपका टोकन", showAtGate:"गेट पर यह दिखाएँ",
+ aheadOfYou:"आपसे आगे किसान", estWait:"अनुमानित प्रतीक्षा", minutes:"मिनट", position:"आपका नंबर",
+ called:"आपको अभी बुलाया जा रहा है। तौल केंद्र पर पहुँचें।", arriveBy:"केंद्र पहुँचें",
+ cancelBooking:"बुकिंग रद्द करें", cancelled:"रद्द", noShow:"अनुपस्थित", served:"तौल हुआ", arrived:"पहुँचे",
+ statusBooked:"स्लॉट बुक", statusArrived:"केंद्र पहुँचे", statusWeighed:"तौल और ग्रेडिंग", statusAccepted:"भंडारण में स्वीकृत",
+ statusPayPending:"भुगतान लंबित", statusPaid:"भुगतान जमा",
+ payment:"भुगतान", amount:"राशि", grade:"ग्रेड", moisture:"नमी", utr:"यूटीआर नंबर", paidOn:"जमा तिथि",
+ noRecords:"अभी कुछ नहीं। स्लॉट बुक करें, यहाँ दिखेगा।",
+ noAlerts:"कोई संदेश नहीं।", markRead:"सभी पढ़े हुए",
+ storage:"भंडारण", capacity:"क्षमता", used:"भरा", storageWarn:"गोदाम लगभग भरा — लादने से पहले केंद्र से पूछें",
+ todayBookings:"आज की बुकिंग", servedToday:"आज तौल", inQueue:"अभी कतार में", paidOut:"आज भुगतान",
+ callNext:"अगला टोकन बुलाएँ", nowCalling:"बुलाया जा रहा है", queueEmpty:"कतार खाली है।", markArrived:"पहुँचे", markNoShow:"अनुपस्थित",
+ recordWeighing:"तौल दर्ज करें", netQty:"शुद्ध मात्रा (क्विंटल)", moisturePct:"नमी %", ratePerQ:"प्रति क्विंटल दर",
+ payable:"देय राशि", accept:"स्वीकार कर भंडारण में भेजें", releasePayment:"भुगतान जारी करें", markPaid:"भुगतान हुआ",
+ pendingPayments:"जारी करने योग्य भुगतान", noPending:"सभी भुगतान हो चुके।",
+ msgTitle:"किसानों को संदेश", msgBody:"संदेश लिखें", sendTo:"किसे भेजें", allFarmers:"सभी पंजीकृत किसान",
+ send:"सूचना भेजें", sentTo:"सूचना भेजी गई", peopleShort:"किसानों को",
+ encTitle:"डेटा कैसे सुरक्षित रखा जाता है",
+ encBody:"पिन कभी संग्रहीत नहीं होता। हर पिन को सॉल्ट के साथ PBKDF2-SHA256 से 1,50,000 बार गुज़ारा जाता है और केवल डाइजेस्ट रखा जाता है। आधार, मोबाइल और बैंक खाता संख्या को संग्रह से पहले AES-GCM 256-बिट से एन्क्रिप्ट किया जाता है, हर फ़ील्ड के लिए अलग 96-बिट नॉन्स के साथ।",
+ encReveal:"दिखाएँ", encHide:"छिपाएँ", encStored:"वास्तव में क्या संग्रहीत है", encPlain:"डिक्रिप्ट किया मान",
+ addCentre:"केंद्र जोड़ें", centreName:"केंद्र का नाम", perSlot:"प्रति समय-खंड किसान", svcTime:"प्रति किसान मिनट", storageCap:"भंडारण क्षमता (क्विंटल)",
+ deleteCentre:"हटाएँ", updated:"सहेजा गया।", noFarmers:"अभी कोई किसान पंजीकृत नहीं।",
+ errPhone:"10 अंकों का मोबाइल नंबर डालें।", errPin:"पिन 4 अंकों का होना चाहिए।", errPinMatch:"दोनों पिन अलग हैं।",
+ errExists:"यह नंबर पहले से पंजीकृत है।", errNoUser:"इस नंबर का कोई खाता नहीं मिला।", errWrong:"गलत पिन।",
+ errName:"अपना नाम डालें।", errQty:"क्विंटल में मात्रा डालें।", errSlot:"पहले तारीख और समय चुनें।",
+ errFull:"यह समय अभी भर गया। दूसरा चुनें।", errMsg:"पहले संदेश लिखें।",
+ confirmCancel:"यह बुकिंग रद्द करें? आपका टोकन किसी और किसान को मिल जाएगा।",
+ demoNote:"डेमो — डेटा केवल इसी ब्राउज़र में रहता है। कहीं नहीं भेजा जाता।",
+ resetDemo:"डेमो डेटा रीसेट करें", resetDone:"डेमो डेटा रीसेट हुआ।", theme:"थीम",
+ bookedFor:"बुक", quintals:"क्विं", searchFarmer:"नाम, गाँव या टोकन से खोजें",
+ smsPreview:"एसएमएस पूर्वावलोकन", sentAt:"भेजा", channel:"माध्यम", sms:"एसएमएस", push:"ऐप सूचना",
+ msgBooked:"{c} पर {d}, {t} का स्लॉट बुक। टोकन {k}। गेट पर यह एसएमएस दिखाएँ।",
+ msgNear:"टोकन {k} — {c} पर आपसे तीन किसान आगे हैं। तौल केंद्र पर पहुँचें।",
+ msgCalled:"{c} पर टोकन {k} अभी बुलाया जा रहा है। तौल केंद्र पर आएँ।",
+ msgWeighed:"टोकन {k}: {q} क्विंटल, दर रु {r}/क्विंटल पर स्वीकृत। देय रु {a}। भुगतान जल्द।",
+ msgPaid:"टोकन {k} के लिए रु {a} आपके बैंक खाते में जमा। यूटीआर {u}।",
+ msgStorage:"{c} गोदाम {p}% भर चुका है। लादने से पहले जगह की पुष्टि करें।"
+},
+kn:{
+ app:"ಅನ್ನದಾತ ಸೇತು", tagline:"ಖರೀದಿ ಕೇಂದ್ರದ ಸರತಿ, ದಾಸ್ತಾನು ಮತ್ತು ಪಾವತಿ ಮಾಹಿತಿ",
+ heroTitle:"ನಿಮ್ಮ ಸರದಿಯನ್ನು ಮೊದಲೇ ಕಾದಿರಿಸಿ. ರಾತ್ರಿಯ ಸರತಿ ಬೇಡ.",
+ heroBody:"ಖರೀದಿ ಕೇಂದ್ರದಲ್ಲಿ ತೂಕದ ಸಮಯ ಕಾದಿರಿಸಿ, ಮನೆಯಿಂದಲೇ ಟೋಕನ್ ಬೋರ್ಡ್ ನೋಡಿ, ಹಣ ಖಾತೆಗೆ ಬರುವವರೆಗೆ ಪಾವತಿ ಗಮನಿಸಿ.",
+ farmerEntry:"ನಾನು ರೈತ", farmerEntrySub:"ನೋಂದಣಿ, ಸ್ಲಾಟ್ ಬುಕಿಂಗ್, ಪಾವತಿ",
+ adminEntry:"ನಾನು ಕೇಂದ್ರ ನಡೆಸುತ್ತೇನೆ", adminEntrySub:"ಸರತಿ, ತೂಕ ಮತ್ತು ದಾಸ್ತಾನು ನಿರ್ವಹಣೆ",
+ nowServing:"ಈಗ ಕರೆಯಲಾಗುತ್ತಿದೆ", atCentre:"ಕೇಂದ್ರ", waiting:"ಸರತಿಯಲ್ಲಿ", avgWait:"ಸರಾಸರಿ ಕಾಯುವಿಕೆ", storageFree:"ಖಾಲಿ ದಾಸ್ತಾನು",
+ liveBoard:"ನೇರ ಟೋಕನ್ ಬೋರ್ಡ್", pickCentre:"ಕೇಂದ್ರ ಆಯ್ಕೆಮಾಡಿ",
+ f1:"ಒಂದು ಸ್ಲಾಟ್, ಒಂದು ಟೋಕನ್", f1b:"ದಿನಾಂಕ ಮತ್ತು ಎರಡು ಗಂಟೆಯ ಅವಧಿ ಆರಿಸಿ. ಬುಕ್ ಮಾಡಿದ ಕ್ಷಣವೇ ಟೋಕನ್ ನಿಗದಿ.",
+ f2:"ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಸಂದೇಶ", f2b:"ಬುಕಿಂಗ್ ದೃಢಪಟ್ಟಾಗ, ಮೂವರು ರೈತರು ಮುಂದಿರುವಾಗ, ಪಾವತಿ ಬಿಡುಗಡೆಯಾದಾಗ ಎಸ್ಎಂಎಸ್.",
+ f3:"ಪಾವತಿ ಮೇಲೆ ಕಣ್ಣು", f3b:"ತೂಕ, ದರ್ಜೆ, ದರ ಮತ್ತು ಯುಟಿಆರ್ ಸಂಖ್ಯೆ — ಪ್ರತಿ ಹಂತವೂ ಸ್ಪಷ್ಟ.",
+ f4:"ಹೊರಡುವ ಮೊದಲು ದಾಸ್ತಾನು", f4b:"ಟ್ರಾಕ್ಟರ್ ತುಂಬುವ ಮೊದಲು ಗೋದಾಮು ಎಷ್ಟು ತುಂಬಿದೆ ಎಂದು ನೋಡಿ.",
+ login:"ಲಾಗಿನ್", register:"ನೋಂದಣಿ", logout:"ಲಾಗ್ ಔಟ್", back:"ಹಿಂದೆ", cancel:"ರದ್ದು", save:"ಉಳಿಸಿ", close:"ಮುಚ್ಚಿ",
+ phone:"ಮೊಬೈಲ್ ಸಂಖ್ಯೆ", pin:"4 ಅಂಕಿಯ ಪಿನ್", confirmPin:"ಪಿನ್ ಮತ್ತೊಮ್ಮೆ", name:"ಪೂರ್ಣ ಹೆಸರು", village:"ಗ್ರಾಮ", district:"ಜಿಲ್ಲೆ",
+ crop:"ಬೆಳೆ", acres:"ಭೂಮಿ (ಎಕರೆ)", aadhaar:"ಆಧಾರ್ ಸಂಖ್ಯೆ", bank:"ಬ್ಯಾಂಕ್ ಖಾತೆ ಸಂಖ್ಯೆ", lang:"ಭಾಷೆ",
+ createAccount:"ಖಾತೆ ತೆರೆಯಿರಿ", haveAccount:"ಈಗಾಗಲೇ ನೋಂದಾಯಿತ? ಲಾಗಿನ್", newHere:"ಹೊಸಬರೇ? ನೋಂದಣಿ",
+ farmerLogin:"ರೈತ ಲಾಗಿನ್", farmerRegister:"ರೈತ ನೋಂದಣಿ",
+ adminLogin:"ಕೇಂದ್ರ ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್", username:"ಸಿಬ್ಬಂದಿ ಐಡಿ", adminHint:"ಡೆಮೊ ಐಡಿ: officer · ಪಿನ್: 1234",
+ home:"ಮುಖಪುಟ", book:"ಸ್ಲಾಟ್ ಬುಕ್", queue:"ನೇರ ಸರತಿ", status:"ಬೆಳೆ ಮತ್ತು ಪಾವತಿ", alerts:"ಸಂದೇಶ", profile:"ವಿವರ",
+ dashboard:"ಸಾರಾಂಶ", qmgmt:"ಸರತಿ", weighing:"ತೂಕ", centres:"ಕೇಂದ್ರ ಮತ್ತು ದಾಸ್ತಾನು", farmers:"ರೈತರು", broadcast:"ಸಂದೇಶ ಕಳುಹಿಸಿ", security:"ಭದ್ರತೆ",
+ greet:"ನಮಸ್ಕಾರ", yourNextVisit:"ಮುಂದಿನ ಭೇಟಿ", noBooking:"ಇನ್ನೂ ಸ್ಲಾಟ್ ಬುಕ್ ಆಗಿಲ್ಲ", bookNow:"ಸ್ಲಾಟ್ ಬುಕ್ ಮಾಡಿ",
+ bookAt:"ತೂಕದ ಸ್ಲಾಟ್ ಬುಕ್ ಮಾಡಿ", step1:"ಕೇಂದ್ರ ಆರಿಸಿ", step2:"ದಿನಾಂಕ ಆರಿಸಿ", step3:"ಸಮಯ ಆರಿಸಿ",
+ expectedQty:"ತರುವ ಪ್ರಮಾಣ (ಕ್ವಿಂಟಾಲ್)", confirmBooking:"ಬುಕಿಂಗ್ ದೃಢೀಕರಿಸಿ", slotsLeft:"ಬಾಕಿ", slotFull:"ಭರ್ತಿ",
+ booked:"ಬುಕ್", token:"ಟೋಕನ್", date:"ದಿನಾಂಕ", time:"ಸಮಯ", centre:"ಕೇಂದ್ರ", rate:"ದರ", quantity:"ಪ್ರಮಾಣ",
+ bookingDone:"ಸ್ಲಾಟ್ ಬುಕ್ ಆಯಿತು. ಟೋಕನ್ ನೀಡಲಾಗಿದೆ.", yourToken:"ನಿಮ್ಮ ಟೋಕನ್", showAtGate:"ಗೇಟಿನಲ್ಲಿ ಇದನ್ನು ತೋರಿಸಿ",
+ aheadOfYou:"ನಿಮ್ಮ ಮುಂದೆ ರೈತರು", estWait:"ಅಂದಾಜು ಕಾಯುವಿಕೆ", minutes:"ನಿಮಿಷ", position:"ನಿಮ್ಮ ಸ್ಥಾನ",
+ called:"ನಿಮ್ಮನ್ನು ಈಗ ಕರೆಯಲಾಗುತ್ತಿದೆ. ತೂಕದ ವೇದಿಕೆಗೆ ಬನ್ನಿ.", arriveBy:"ಕೇಂದ್ರ ತಲುಪಿ",
+ cancelBooking:"ಬುಕಿಂಗ್ ರದ್ದು", cancelled:"ರದ್ದು", noShow:"ಗೈರು", served:"ತೂಕವಾಯಿತು", arrived:"ಬಂದಿದ್ದಾರೆ",
+ statusBooked:"ಸ್ಲಾಟ್ ಬುಕ್", statusArrived:"ಕೇಂದ್ರಕ್ಕೆ ಬಂದಿದ್ದಾರೆ", statusWeighed:"ತೂಕ ಮತ್ತು ದರ್ಜೆ", statusAccepted:"ದಾಸ್ತಾನಿಗೆ ಸ್ವೀಕಾರ",
+ statusPayPending:"ಪಾವತಿ ಬಾಕಿ", statusPaid:"ಪಾವತಿ ಜಮೆ",
+ payment:"ಪಾವತಿ", amount:"ಮೊತ್ತ", grade:"ದರ್ಜೆ", moisture:"ತೇವಾಂಶ", utr:"ಯುಟಿಆರ್ ಸಂಖ್ಯೆ", paidOn:"ಜಮೆ ದಿನಾಂಕ",
+ noRecords:"ಇನ್ನೂ ಏನೂ ಇಲ್ಲ. ಸ್ಲಾಟ್ ಬುಕ್ ಮಾಡಿದರೆ ಇಲ್ಲಿ ಕಾಣುತ್ತದೆ.",
+ noAlerts:"ಸಂದೇಶಗಳಿಲ್ಲ.", markRead:"ಎಲ್ಲವನ್ನೂ ಓದಿದೆ ಎಂದು ಗುರುತಿಸಿ",
+ storage:"ದಾಸ್ತಾನು", capacity:"ಸಾಮರ್ಥ್ಯ", used:"ತುಂಬಿದೆ", storageWarn:"ಗೋದಾಮು ಬಹುತೇಕ ಭರ್ತಿ — ಲೋಡ್ ಮಾಡುವ ಮೊದಲು ಕೇಳಿ",
+ todayBookings:"ಇಂದಿನ ಬುಕಿಂಗ್", servedToday:"ಇಂದು ತೂಕ", inQueue:"ಈಗ ಸರತಿಯಲ್ಲಿ", paidOut:"ಇಂದು ಪಾವತಿ",
+ callNext:"ಮುಂದಿನ ಟೋಕನ್ ಕರೆಯಿರಿ", nowCalling:"ಕರೆಯಲಾಗುತ್ತಿದೆ", queueEmpty:"ಸರತಿ ಖಾಲಿ.", markArrived:"ಬಂದರು", markNoShow:"ಗೈರು",
+ recordWeighing:"ತೂಕ ದಾಖಲಿಸಿ", netQty:"ನಿವ್ವಳ ಪ್ರಮಾಣ (ಕ್ವಿಂಟಾಲ್)", moisturePct:"ತೇವಾಂಶ %", ratePerQ:"ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್ ದರ",
+ payable:"ಪಾವತಿಸಬೇಕಾದ ಮೊತ್ತ", accept:"ಸ್ವೀಕರಿಸಿ ದಾಸ್ತಾನಿಗೆ ಸೇರಿಸಿ", releasePayment:"ಪಾವತಿ ಬಿಡುಗಡೆ", markPaid:"ಪಾವತಿಯಾಗಿದೆ",
+ pendingPayments:"ಬಿಡುಗಡೆಗೆ ಬಾಕಿ ಪಾವತಿ", noPending:"ಎಲ್ಲಾ ಪಾವತಿ ಮುಗಿದಿದೆ.",
+ msgTitle:"ರೈತರಿಗೆ ಸಂದೇಶ", msgBody:"ಸಂದೇಶ ಬರೆಯಿರಿ", sendTo:"ಯಾರಿಗೆ", allFarmers:"ಎಲ್ಲಾ ನೋಂದಾಯಿತ ರೈತರು",
+ send:"ಸಂದೇಶ ಕಳುಹಿಸಿ", sentTo:"ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ", peopleShort:"ರೈತರಿಗೆ",
+ encTitle:"ಈ ಮಾಹಿತಿ ಹೇಗೆ ಸುರಕ್ಷಿತ",
+ encBody:"ಪಿನ್ ಎಂದಿಗೂ ಸಂಗ್ರಹವಾಗುವುದಿಲ್ಲ. ಪ್ರತಿ ಪಿನ್ ಅನ್ನು ಸಾಲ್ಟ್ ಜೊತೆ PBKDF2-SHA256 ಮೂಲಕ 1,50,000 ಸಲ ಹಾಯಿಸಿ ಡೈಜೆಸ್ಟ್ ಮಾತ್ರ ಇಡಲಾಗುತ್ತದೆ. ಆಧಾರ್, ಮೊಬೈಲ್ ಮತ್ತು ಬ್ಯಾಂಕ್ ಖಾತೆ ಸಂಖ್ಯೆಗಳನ್ನು AES-GCM 256-ಬಿಟ್ ಮೂಲಕ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗುತ್ತದೆ.",
+ encReveal:"ತೋರಿಸಿ", encHide:"ಮರೆಮಾಡಿ", encStored:"ನಿಜವಾಗಿ ಸಂಗ್ರಹವಾಗಿರುವುದು", encPlain:"ಡಿಕ್ರಿಪ್ಟ್ ಮೌಲ್ಯ",
+ addCentre:"ಕೇಂದ್ರ ಸೇರಿಸಿ", centreName:"ಕೇಂದ್ರದ ಹೆಸರು", perSlot:"ಪ್ರತಿ ಅವಧಿಗೆ ರೈತರು", svcTime:"ಪ್ರತಿ ರೈತರಿಗೆ ನಿಮಿಷ", storageCap:"ದಾಸ್ತಾನು ಸಾಮರ್ಥ್ಯ (ಕ್ವಿಂಟಾಲ್)",
+ deleteCentre:"ತೆಗೆದುಹಾಕಿ", updated:"ಉಳಿಸಲಾಗಿದೆ.", noFarmers:"ಇನ್ನೂ ರೈತರು ನೋಂದಾಯಿಸಿಲ್ಲ.",
+ errPhone:"10 ಅಂಕಿಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ.", errPin:"ಪಿನ್ 4 ಅಂಕಿ ಇರಬೇಕು.", errPinMatch:"ಎರಡು ಪಿನ್ ಹೊಂದಿಕೆಯಾಗಿಲ್ಲ.",
+ errExists:"ಈ ಸಂಖ್ಯೆ ಈಗಾಗಲೇ ನೋಂದಾಯಿತ.", errNoUser:"ಈ ಸಂಖ್ಯೆಗೆ ಖಾತೆ ಸಿಗಲಿಲ್ಲ.", errWrong:"ತಪ್ಪಾದ ಪಿನ್.",
+ errName:"ನಿಮ್ಮ ಹೆಸರು ನಮೂದಿಸಿ.", errQty:"ಕ್ವಿಂಟಾಲ್‌ನಲ್ಲಿ ಪ್ರಮಾಣ ನಮೂದಿಸಿ.", errSlot:"ಮೊದಲು ದಿನಾಂಕ ಮತ್ತು ಸಮಯ ಆರಿಸಿ.",
+ errFull:"ಆ ಅವಧಿ ಈಗ ಭರ್ತಿಯಾಯಿತು. ಬೇರೊಂದು ಆರಿಸಿ.", errMsg:"ಮೊದಲು ಸಂದೇಶ ಬರೆಯಿರಿ.",
+ confirmCancel:"ಈ ಬುಕಿಂಗ್ ರದ್ದುಗೊಳಿಸುವುದೇ? ನಿಮ್ಮ ಟೋಕನ್ ಬೇರೊಬ್ಬರಿಗೆ ಹೋಗುತ್ತದೆ.",
+ demoNote:"ಡೆಮೊ — ಮಾಹಿತಿ ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಮಾತ್ರ ಉಳಿಯುತ್ತದೆ.",
+ resetDemo:"ಡೆಮೊ ಡೇಟಾ ರೀಸೆಟ್", resetDone:"ಡೆಮೊ ಡೇಟಾ ರೀಸೆಟ್ ಆಯಿತು.", theme:"ಥೀಮ್",
+ bookedFor:"ಬುಕ್", quintals:"ಕ್ವಿಂ", searchFarmer:"ಹೆಸರು, ಗ್ರಾಮ ಅಥವಾ ಟೋಕನ್ ಮೂಲಕ ಹುಡುಕಿ",
+ smsPreview:"ಎಸ್ಎಂಎಸ್ ಮುನ್ನೋಟ", sentAt:"ಕಳುಹಿಸಿದ್ದು", channel:"ಮಾಧ್ಯಮ", sms:"ಎಸ್ಎಂಎಸ್", push:"ಆ್ಯಪ್ ಸಂದೇಶ",
+ msgBooked:"{c} ನಲ್ಲಿ {d}, {t} ಸ್ಲಾಟ್ ಬುಕ್. ಟೋಕನ್ {k}. ಗೇಟಿನಲ್ಲಿ ಈ ಸಂದೇಶ ತೋರಿಸಿ.",
+ msgNear:"ಟೋಕನ್ {k} — {c} ನಲ್ಲಿ ನಿಮ್ಮ ಮುಂದೆ ಮೂವರು ರೈತರಿದ್ದಾರೆ. ತೂಕದ ವೇದಿಕೆಗೆ ಬನ್ನಿ.",
+ msgCalled:"{c} ನಲ್ಲಿ ಟೋಕನ್ {k} ಈಗ ಕರೆಯಲಾಗುತ್ತಿದೆ. ತೂಕದ ವೇದಿಕೆಗೆ ಬನ್ನಿ.",
+ msgWeighed:"ಟೋಕನ್ {k}: {q} ಕ್ವಿಂಟಾಲ್, ದರ ರೂ {r}/ಕ್ವಿಂಟಾಲ್. ಪಾವತಿ ರೂ {a}.",
+ msgPaid:"ಟೋಕನ್ {k} ಗೆ ರೂ {a} ನಿಮ್ಮ ಖಾತೆಗೆ ಜಮೆ. ಯುಟಿಆರ್ {u}.",
+ msgStorage:"{c} ಗೋದಾಮು {p}% ಭರ್ತಿ. ಲೋಡ್ ಮಾಡುವ ಮೊದಲು ಖಚಿತಪಡಿಸಿ."
+},
+pa:{
+ app:"ਅੰਨਦਾਤਾ ਸੇਤੂ", tagline:"ਖਰੀਦ ਕੇਂਦਰ ਦੀ ਕਤਾਰ, ਭੰਡਾਰਨ ਤੇ ਅਦਾਇਗੀ",
+ heroTitle:"ਆਪਣੀ ਵਾਰੀ ਪਹਿਲਾਂ ਬੁੱਕ ਕਰੋ। ਸਾਰੀ ਰਾਤ ਦੀ ਕਤਾਰ ਤੋਂ ਬਚੋ।",
+ heroBody:"ਖਰੀਦ ਕੇਂਦਰ ਉੱਤੇ ਤੋਲ ਦਾ ਸਮਾਂ ਰਾਖਵਾਂ ਕਰੋ, ਘਰੋਂ ਹੀ ਟੋਕਨ ਬੋਰਡ ਵੇਖੋ, ਤੇ ਪੈਸਾ ਖਾਤੇ ਵਿੱਚ ਆਉਣ ਤੱਕ ਅਦਾਇਗੀ ਵੇਖੋ।",
+ farmerEntry:"ਮੈਂ ਕਿਸਾਨ ਹਾਂ", farmerEntrySub:"ਰਜਿਸਟਰੇਸ਼ਨ, ਸਲਾਟ, ਅਦਾਇਗੀ",
+ adminEntry:"ਮੈਂ ਕੇਂਦਰ ਚਲਾਉਂਦਾ ਹਾਂ", adminEntrySub:"ਕਤਾਰ, ਤੋਲ ਤੇ ਭੰਡਾਰਨ",
+ nowServing:"ਹੁਣ ਬੁਲਾਇਆ ਜਾ ਰਿਹਾ", atCentre:"ਕੇਂਦਰ", waiting:"ਕਤਾਰ ਵਿੱਚ", avgWait:"ਔਸਤ ਉਡੀਕ", storageFree:"ਖਾਲੀ ਭੰਡਾਰਨ",
+ liveBoard:"ਲਾਈਵ ਟੋਕਨ ਬੋਰਡ", pickCentre:"ਕੇਂਦਰ ਚੁਣੋ",
+ f1:"ਇੱਕ ਸਲਾਟ, ਇੱਕ ਟੋਕਨ", f1b:"ਤਾਰੀਖ ਤੇ ਦੋ ਘੰਟੇ ਦਾ ਸਮਾਂ ਚੁਣੋ। ਬੁੱਕ ਕਰਦਿਆਂ ਹੀ ਟੋਕਨ ਪੱਕਾ।",
+ f2:"ਤੁਹਾਡੀ ਭਾਸ਼ਾ ਵਿੱਚ ਸੁਨੇਹਾ", f2b:"ਬੁਕਿੰਗ ਪੱਕੀ ਹੋਣ ਤੇ, ਤਿੰਨ ਕਿਸਾਨ ਅੱਗੇ ਹੋਣ ਤੇ, ਤੇ ਅਦਾਇਗੀ ਵੇਲੇ ਐਸਐਮਐਸ।",
+ f3:"ਅਦਾਇਗੀ ਉੱਤੇ ਨਜ਼ਰ", f3b:"ਤੋਲ, ਦਰਜਾ, ਭਾਅ ਤੇ ਯੂਟੀਆਰ ਨੰਬਰ — ਹਰ ਕਦਮ ਸਾਫ਼।",
+ f4:"ਤੁਰਨ ਤੋਂ ਪਹਿਲਾਂ ਭੰਡਾਰਨ", f4b:"ਟਰਾਲੀ ਭਰਨ ਤੋਂ ਪਹਿਲਾਂ ਵੇਖੋ ਗੁਦਾਮ ਕਿੰਨਾ ਭਰਿਆ ਹੈ।",
+ login:"ਲਾਗਇਨ", register:"ਰਜਿਸਟਰ", logout:"ਲਾਗਆਉਟ", back:"ਪਿੱਛੇ", cancel:"ਰੱਦ", save:"ਸੰਭਾਲੋ", close:"ਬੰਦ",
+ phone:"ਮੋਬਾਈਲ ਨੰਬਰ", pin:"4 ਅੰਕਾਂ ਦਾ ਪਿੰਨ", confirmPin:"ਪਿੰਨ ਦੁਬਾਰਾ", name:"ਪੂਰਾ ਨਾਂ", village:"ਪਿੰਡ", district:"ਜ਼ਿਲ੍ਹਾ",
+ crop:"ਫ਼ਸਲ", acres:"ਜ਼ਮੀਨ (ਏਕੜ)", aadhaar:"ਆਧਾਰ ਨੰਬਰ", bank:"ਬੈਂਕ ਖਾਤਾ ਨੰਬਰ", lang:"ਭਾਸ਼ਾ",
+ createAccount:"ਖਾਤਾ ਬਣਾਓ", haveAccount:"ਪਹਿਲਾਂ ਰਜਿਸਟਰ? ਲਾਗਇਨ ਕਰੋ", newHere:"ਨਵੇਂ ਹੋ? ਰਜਿਸਟਰ ਕਰੋ",
+ farmerLogin:"ਕਿਸਾਨ ਲਾਗਇਨ", farmerRegister:"ਕਿਸਾਨ ਰਜਿਸਟਰੇਸ਼ਨ",
+ adminLogin:"ਕੇਂਦਰ ਸਟਾਫ਼ ਲਾਗਇਨ", username:"ਸਟਾਫ਼ ਆਈਡੀ", adminHint:"ਡੈਮੋ ਆਈਡੀ: officer · ਪਿੰਨ: 1234",
+ home:"ਘਰ", book:"ਸਲਾਟ ਬੁੱਕ", queue:"ਲਾਈਵ ਕਤਾਰ", status:"ਫ਼ਸਲ ਤੇ ਅਦਾਇਗੀ", alerts:"ਸੁਨੇਹੇ", profile:"ਪ੍ਰੋਫ਼ਾਈਲ",
+ dashboard:"ਸਾਰ", qmgmt:"ਕਤਾਰ", weighing:"ਤੋਲ", centres:"ਕੇਂਦਰ ਤੇ ਭੰਡਾਰਨ", farmers:"ਕਿਸਾਨ", broadcast:"ਸੁਨੇਹਾ ਭੇਜੋ", security:"ਸੁਰੱਖਿਆ",
+ greet:"ਸਤ ਸ੍ਰੀ ਅਕਾਲ", yourNextVisit:"ਅਗਲੀ ਵਾਰੀ", noBooking:"ਹਾਲੇ ਕੋਈ ਸਲਾਟ ਨਹੀਂ", bookNow:"ਸਲਾਟ ਬੁੱਕ ਕਰੋ",
+ bookAt:"ਤੋਲ ਦਾ ਸਲਾਟ ਬੁੱਕ ਕਰੋ", step1:"ਕੇਂਦਰ ਚੁਣੋ", step2:"ਤਾਰੀਖ ਚੁਣੋ", step3:"ਸਮਾਂ ਚੁਣੋ",
+ expectedQty:"ਕਿੰਨਾ ਲਿਆਓਗੇ (ਕੁਇੰਟਲ)", confirmBooking:"ਬੁਕਿੰਗ ਪੱਕੀ ਕਰੋ", slotsLeft:"ਬਾਕੀ", slotFull:"ਭਰਿਆ",
+ booked:"ਬੁੱਕ", token:"ਟੋਕਨ", date:"ਤਾਰੀਖ", time:"ਸਮਾਂ", centre:"ਕੇਂਦਰ", rate:"ਭਾਅ", quantity:"ਮਾਤਰਾ",
+ bookingDone:"ਸਲਾਟ ਬੁੱਕ ਹੋ ਗਿਆ। ਟੋਕਨ ਜਾਰੀ।", yourToken:"ਤੁਹਾਡਾ ਟੋਕਨ", showAtGate:"ਗੇਟ ਉੱਤੇ ਇਹ ਵਿਖਾਓ",
+ aheadOfYou:"ਤੁਹਾਡੇ ਅੱਗੇ ਕਿਸਾਨ", estWait:"ਅੰਦਾਜ਼ਨ ਉਡੀਕ", minutes:"ਮਿੰਟ", position:"ਤੁਹਾਡਾ ਨੰਬਰ",
+ called:"ਤੁਹਾਨੂੰ ਹੁਣ ਬੁਲਾਇਆ ਜਾ ਰਿਹਾ ਹੈ। ਤੋਲ ਵੱਲ ਆਓ।", arriveBy:"ਕੇਂਦਰ ਪਹੁੰਚੋ",
+ cancelBooking:"ਬੁਕਿੰਗ ਰੱਦ ਕਰੋ", cancelled:"ਰੱਦ", noShow:"ਗ਼ੈਰਹਾਜ਼ਰ", served:"ਤੋਲ ਹੋਇਆ", arrived:"ਪਹੁੰਚੇ",
+ statusBooked:"ਸਲਾਟ ਬੁੱਕ", statusArrived:"ਕੇਂਦਰ ਪਹੁੰਚੇ", statusWeighed:"ਤੋਲ ਤੇ ਦਰਜਾ", statusAccepted:"ਭੰਡਾਰਨ ਵਿੱਚ ਮਨਜ਼ੂਰ",
+ statusPayPending:"ਅਦਾਇਗੀ ਬਾਕੀ", statusPaid:"ਅਦਾਇਗੀ ਜਮ੍ਹਾਂ",
+ payment:"ਅਦਾਇਗੀ", amount:"ਰਕਮ", grade:"ਦਰਜਾ", moisture:"ਨਮੀ", utr:"ਯੂਟੀਆਰ ਨੰਬਰ", paidOn:"ਜਮ੍ਹਾਂ ਮਿਤੀ",
+ noRecords:"ਹਾਲੇ ਕੁਝ ਨਹੀਂ। ਸਲਾਟ ਬੁੱਕ ਕਰੋ।",
+ noAlerts:"ਕੋਈ ਸੁਨੇਹਾ ਨਹੀਂ।", markRead:"ਸਾਰੇ ਪੜ੍ਹੇ",
+ storage:"ਭੰਡਾਰਨ", capacity:"ਸਮਰੱਥਾ", used:"ਭਰਿਆ", storageWarn:"ਗੁਦਾਮ ਲਗਭਗ ਭਰਿਆ — ਲੱਦਣ ਤੋਂ ਪਹਿਲਾਂ ਪੁੱਛੋ",
+ todayBookings:"ਅੱਜ ਦੀ ਬੁਕਿੰਗ", servedToday:"ਅੱਜ ਤੋਲ", inQueue:"ਹੁਣ ਕਤਾਰ ਵਿੱਚ", paidOut:"ਅੱਜ ਅਦਾਇਗੀ",
+ callNext:"ਅਗਲਾ ਟੋਕਨ ਬੁਲਾਓ", nowCalling:"ਬੁਲਾਇਆ ਜਾ ਰਿਹਾ", queueEmpty:"ਕਤਾਰ ਖਾਲੀ ਹੈ।", markArrived:"ਪਹੁੰਚੇ", markNoShow:"ਗ਼ੈਰਹਾਜ਼ਰ",
+ recordWeighing:"ਤੋਲ ਦਰਜ ਕਰੋ", netQty:"ਸ਼ੁੱਧ ਮਾਤਰਾ (ਕੁਇੰਟਲ)", moisturePct:"ਨਮੀ %", ratePerQ:"ਪ੍ਰਤੀ ਕੁਇੰਟਲ ਭਾਅ",
+ payable:"ਦੇਣਯੋਗ ਰਕਮ", accept:"ਮਨਜ਼ੂਰ ਕਰ ਭੰਡਾਰਨ ਵਿੱਚ ਭੇਜੋ", releasePayment:"ਅਦਾਇਗੀ ਜਾਰੀ ਕਰੋ", markPaid:"ਅਦਾਇਗੀ ਹੋਈ",
+ pendingPayments:"ਜਾਰੀ ਕਰਨ ਵਾਲੀ ਅਦਾਇਗੀ", noPending:"ਸਾਰੀ ਅਦਾਇਗੀ ਹੋ ਚੁੱਕੀ।",
+ msgTitle:"ਕਿਸਾਨਾਂ ਨੂੰ ਸੁਨੇਹਾ", msgBody:"ਸੁਨੇਹਾ ਲਿਖੋ", sendTo:"ਕਿਸ ਨੂੰ", allFarmers:"ਸਾਰੇ ਰਜਿਸਟਰ ਕਿਸਾਨ",
+ send:"ਸੁਨੇਹਾ ਭੇਜੋ", sentTo:"ਸੁਨੇਹਾ ਭੇਜਿਆ", peopleShort:"ਕਿਸਾਨਾਂ ਨੂੰ",
+ encTitle:"ਇਹ ਡਾਟਾ ਕਿਵੇਂ ਸੁਰੱਖਿਅਤ ਹੈ",
+ encBody:"ਪਿੰਨ ਕਦੇ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾਂਦਾ। ਹਰ ਪਿੰਨ ਨੂੰ ਸਾਲਟ ਨਾਲ PBKDF2-SHA256 ਰਾਹੀਂ 1,50,000 ਵਾਰ ਲੰਘਾਇਆ ਜਾਂਦਾ ਹੈ। ਆਧਾਰ, ਮੋਬਾਈਲ ਤੇ ਬੈਂਕ ਖਾਤਾ ਨੰਬਰ AES-GCM 256-ਬਿੱਟ ਨਾਲ ਇਨਕ੍ਰਿਪਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।",
+ encReveal:"ਵਿਖਾਓ", encHide:"ਲੁਕਾਓ", encStored:"ਅਸਲ ਵਿੱਚ ਕੀ ਸੰਭਾਲਿਆ ਹੈ", encPlain:"ਡਿਕ੍ਰਿਪਟ ਮੁੱਲ",
+ addCentre:"ਕੇਂਦਰ ਜੋੜੋ", centreName:"ਕੇਂਦਰ ਦਾ ਨਾਂ", perSlot:"ਪ੍ਰਤੀ ਸਮਾਂ ਕਿਸਾਨ", svcTime:"ਪ੍ਰਤੀ ਕਿਸਾਨ ਮਿੰਟ", storageCap:"ਭੰਡਾਰਨ ਸਮਰੱਥਾ (ਕੁਇੰਟਲ)",
+ deleteCentre:"ਹਟਾਓ", updated:"ਸੰਭਾਲਿਆ ਗਿਆ।", noFarmers:"ਹਾਲੇ ਕੋਈ ਕਿਸਾਨ ਨਹੀਂ।",
+ errPhone:"10 ਅੰਕਾਂ ਦਾ ਮੋਬਾਈਲ ਨੰਬਰ ਪਾਓ।", errPin:"ਪਿੰਨ 4 ਅੰਕਾਂ ਦਾ ਹੋਵੇ।", errPinMatch:"ਦੋਵੇਂ ਪਿੰਨ ਵੱਖਰੇ ਹਨ।",
+ errExists:"ਇਹ ਨੰਬਰ ਪਹਿਲਾਂ ਰਜਿਸਟਰ ਹੈ।", errNoUser:"ਇਸ ਨੰਬਰ ਦਾ ਖਾਤਾ ਨਹੀਂ ਮਿਲਿਆ।", errWrong:"ਗ਼ਲਤ ਪਿੰਨ।",
+ errName:"ਆਪਣਾ ਨਾਂ ਪਾਓ।", errQty:"ਕੁਇੰਟਲ ਵਿੱਚ ਮਾਤਰਾ ਪਾਓ।", errSlot:"ਪਹਿਲਾਂ ਤਾਰੀਖ ਤੇ ਸਮਾਂ ਚੁਣੋ।",
+ errFull:"ਇਹ ਸਮਾਂ ਭਰ ਗਿਆ। ਹੋਰ ਚੁਣੋ।", errMsg:"ਪਹਿਲਾਂ ਸੁਨੇਹਾ ਲਿਖੋ।",
+ confirmCancel:"ਇਹ ਬੁਕਿੰਗ ਰੱਦ ਕਰਨੀ ਹੈ? ਟੋਕਨ ਕਿਸੇ ਹੋਰ ਨੂੰ ਮਿਲ ਜਾਵੇਗਾ।",
+ demoNote:"ਡੈਮੋ — ਡਾਟਾ ਸਿਰਫ਼ ਇਸੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਰਹਿੰਦਾ ਹੈ।",
+ resetDemo:"ਡੈਮੋ ਡਾਟਾ ਰੀਸੈਟ", resetDone:"ਡੈਮੋ ਡਾਟਾ ਰੀਸੈਟ ਹੋਇਆ।", theme:"ਥੀਮ",
+ bookedFor:"ਬੁੱਕ", quintals:"ਕੁਇੰ", searchFarmer:"ਨਾਂ, ਪਿੰਡ ਜਾਂ ਟੋਕਨ ਨਾਲ ਲੱਭੋ",
+ smsPreview:"ਐਸਐਮਐਸ ਝਲਕ", sentAt:"ਭੇਜਿਆ", channel:"ਮਾਧਿਅਮ", sms:"ਐਸਐਮਐਸ", push:"ਐਪ ਸੁਨੇਹਾ",
+ msgBooked:"{c} ਉੱਤੇ {d}, {t} ਦਾ ਸਲਾਟ ਬੁੱਕ। ਟੋਕਨ {k}। ਗੇਟ ਉੱਤੇ ਇਹ ਵਿਖਾਓ।",
+ msgNear:"ਟੋਕਨ {k} — {c} ਉੱਤੇ ਤੁਹਾਡੇ ਅੱਗੇ ਤਿੰਨ ਕਿਸਾਨ ਹਨ। ਤੋਲ ਵੱਲ ਆਓ।",
+ msgCalled:"{c} ਉੱਤੇ ਟੋਕਨ {k} ਹੁਣ ਬੁਲਾਇਆ ਜਾ ਰਿਹਾ ਹੈ।",
+ msgWeighed:"ਟੋਕਨ {k}: {q} ਕੁਇੰਟਲ, ਭਾਅ ਰੁ {r}/ਕੁਇੰਟਲ। ਦੇਣਯੋਗ ਰੁ {a}।",
+ msgPaid:"ਟੋਕਨ {k} ਲਈ ਰੁ {a} ਤੁਹਾਡੇ ਖਾਤੇ ਵਿੱਚ ਜਮ੍ਹਾਂ। ਯੂਟੀਆਰ {u}।",
+ msgStorage:"{c} ਗੁਦਾਮ {p}% ਭਰ ਚੁੱਕਾ ਹੈ। ਲੱਦਣ ਤੋਂ ਪਹਿਲਾਂ ਪੱਕਾ ਕਰੋ।"
+},
+mr:{
+ app:"अन्नदाता सेतू", tagline:"खरेदी केंद्राची रांग, साठवण आणि देयक माहिती",
+ heroTitle:"तुमची वेळ आधीच नोंदवा. रात्रभराची रांग टाळा.",
+ heroBody:"खरेदी केंद्रावर वजनाची वेळ राखून ठेवा, घरूनच टोकन फलक पाहा, आणि पैसे खात्यात येईपर्यंत देयक स्थिती पाहा.",
+ farmerEntry:"मी शेतकरी आहे", farmerEntrySub:"नोंदणी, वेळ नोंदवा, देयक",
+ adminEntry:"मी केंद्र चालवतो", adminEntrySub:"रांग, वजन आणि साठवण",
+ nowServing:"आता बोलावले जात आहे", atCentre:"केंद्र", waiting:"रांगेत", avgWait:"सरासरी प्रतीक्षा", storageFree:"रिकामी साठवण",
+ liveBoard:"थेट टोकन फलक", pickCentre:"केंद्र निवडा",
+ f1:"एक वेळ, एक टोकन", f1b:"तारीख आणि दोन तासांची वेळ निवडा. नोंदवताच टोकन क्रमांक निश्चित.",
+ f2:"तुमच्या भाषेत संदेश", f2b:"नोंदणी निश्चित झाल्यावर, तीन शेतकरी पुढे असताना, आणि देयक निघाल्यावर एसएमएस.",
+ f3:"देयकावर लक्ष", f3b:"वजन, प्रत, दर आणि यूटीआर क्रमांक — प्रत्येक टप्पा स्पष्ट.",
+ f4:"निघण्याआधी साठवण पाहा", f4b:"ट्रॅक्टर भरण्याआधी गोदाम किती भरले आहे ते पाहा.",
+ login:"लॉग इन", register:"नोंदणी", logout:"लॉग आउट", back:"मागे", cancel:"रद्द", save:"जतन करा", close:"बंद",
+ phone:"मोबाइल क्रमांक", pin:"4 अंकी पिन", confirmPin:"पिन पुन्हा", name:"पूर्ण नाव", village:"गाव", district:"जिल्हा",
+ crop:"पीक", acres:"जमीन (एकर)", aadhaar:"आधार क्रमांक", bank:"बँक खाते क्रमांक", lang:"भाषा",
+ createAccount:"खाते तयार करा", haveAccount:"आधीच नोंदणी? लॉग इन करा", newHere:"नवीन आहात? नोंदणी करा",
+ farmerLogin:"शेतकरी लॉग इन", farmerRegister:"शेतकरी नोंदणी",
+ adminLogin:"केंद्र कर्मचारी लॉग इन", username:"कर्मचारी आयडी", adminHint:"डेमो आयडी: officer · पिन: 1234",
+ home:"मुख्यपृष्ठ", book:"वेळ नोंदवा", queue:"थेट रांग", status:"पीक व देयक", alerts:"संदेश", profile:"माहिती",
+ dashboard:"आढावा", qmgmt:"रांग", weighing:"वजन", centres:"केंद्रे व साठवण", farmers:"शेतकरी", broadcast:"संदेश पाठवा", security:"सुरक्षा",
+ greet:"नमस्कार", yourNextVisit:"पुढील भेट", noBooking:"अद्याप वेळ नोंदवलेली नाही", bookNow:"वेळ नोंदवा",
+ bookAt:"वजनाची वेळ नोंदवा", step1:"केंद्र निवडा", step2:"तारीख निवडा", step3:"वेळ निवडा",
+ expectedQty:"किती आणणार (क्विंटल)", confirmBooking:"नोंदणी निश्चित करा", slotsLeft:"शिल्लक", slotFull:"भरले",
+ booked:"नोंदवले", token:"टोकन", date:"तारीख", time:"वेळ", centre:"केंद्र", rate:"दर", quantity:"प्रमाण",
+ bookingDone:"वेळ नोंदवली. टोकन दिले.", yourToken:"तुमचे टोकन", showAtGate:"फाटकावर हे दाखवा",
+ aheadOfYou:"तुमच्या पुढे शेतकरी", estWait:"अंदाजे प्रतीक्षा", minutes:"मिनिटे", position:"तुमचा क्रमांक",
+ called:"तुम्हाला आता बोलावले जात आहे. वजन काट्याकडे या.", arriveBy:"केंद्रावर पोहोचा",
+ cancelBooking:"नोंदणी रद्द करा", cancelled:"रद्द", noShow:"गैरहजर", served:"वजन झाले", arrived:"पोहोचले",
+ statusBooked:"वेळ नोंदवली", statusArrived:"केंद्रावर पोहोचले", statusWeighed:"वजन व प्रतवारी", statusAccepted:"साठवणीत स्वीकृत",
+ statusPayPending:"देयक बाकी", statusPaid:"देयक जमा",
+ payment:"देयक", amount:"रक्कम", grade:"प्रत", moisture:"ओलावा", utr:"यूटीआर क्रमांक", paidOn:"जमा दिनांक",
+ noRecords:"अद्याप काही नाही. वेळ नोंदवा.",
+ noAlerts:"संदेश नाहीत.", markRead:"सर्व वाचले",
+ storage:"साठवण", capacity:"क्षमता", used:"भरले", storageWarn:"गोदाम जवळपास भरले — भरण्याआधी विचारा",
+ todayBookings:"आजच्या नोंदी", servedToday:"आज वजन", inQueue:"आता रांगेत", paidOut:"आज देयक",
+ callNext:"पुढील टोकन बोलवा", nowCalling:"बोलावले जात आहे", queueEmpty:"रांग रिकामी आहे.", markArrived:"पोहोचले", markNoShow:"गैरहजर",
+ recordWeighing:"वजन नोंदवा", netQty:"निव्वळ प्रमाण (क्विंटल)", moisturePct:"ओलावा %", ratePerQ:"प्रति क्विंटल दर",
+ payable:"देय रक्कम", accept:"स्वीकारून साठवणीत पाठवा", releasePayment:"देयक जारी करा", markPaid:"देयक झाले",
+ pendingPayments:"जारी करायची देयके", noPending:"सर्व देयके पूर्ण.",
+ msgTitle:"शेतकऱ्यांना संदेश", msgBody:"संदेश लिहा", sendTo:"कोणाला", allFarmers:"सर्व नोंदणीकृत शेतकरी",
+ send:"संदेश पाठवा", sentTo:"संदेश पाठवला", peopleShort:"शेतकऱ्यांना",
+ encTitle:"ही माहिती कशी सुरक्षित ठेवली जाते",
+ encBody:"पिन कधीही साठवला जात नाही. प्रत्येक पिन सॉल्टसह PBKDF2-SHA256 मधून 1,50,000 वेळा नेला जातो. आधार, मोबाइल आणि बँक खाते क्रमांक AES-GCM 256-बिटने एन्क्रिप्ट केले जातात.",
+ encReveal:"दाखवा", encHide:"लपवा", encStored:"प्रत्यक्षात काय साठवले आहे", encPlain:"डिक्रिप्ट केलेले मूल्य",
+ addCentre:"केंद्र जोडा", centreName:"केंद्राचे नाव", perSlot:"प्रति वेळ शेतकरी", svcTime:"प्रति शेतकरी मिनिटे", storageCap:"साठवण क्षमता (क्विंटल)",
+ deleteCentre:"काढा", updated:"जतन केले.", noFarmers:"अद्याप शेतकरी नाहीत.",
+ errPhone:"10 अंकी मोबाइल क्रमांक टाका.", errPin:"पिन 4 अंकी हवा.", errPinMatch:"दोन्ही पिन जुळत नाहीत.",
+ errExists:"हा क्रमांक आधीच नोंदणीकृत आहे.", errNoUser:"या क्रमांकाचे खाते सापडले नाही.", errWrong:"चुकीचा पिन.",
+ errName:"तुमचे नाव टाका.", errQty:"क्विंटलमध्ये प्रमाण टाका.", errSlot:"आधी तारीख व वेळ निवडा.",
+ errFull:"ती वेळ आत्ताच भरली. दुसरी निवडा.", errMsg:"आधी संदेश लिहा.",
+ confirmCancel:"ही नोंदणी रद्द करायची? टोकन दुसऱ्याला जाईल.",
+ demoNote:"डेमो — माहिती फक्त याच ब्राउझरमध्ये राहते.",
+ resetDemo:"डेमो डेटा रीसेट", resetDone:"डेमो डेटा रीसेट झाला.", theme:"थीम",
+ bookedFor:"नोंद", quintals:"क्विं", searchFarmer:"नाव, गाव किंवा टोकनने शोधा",
+ smsPreview:"एसएमएस झलक", sentAt:"पाठवले", channel:"माध्यम", sms:"एसएमएस", push:"ॲप संदेश",
+ msgBooked:"{c} येथे {d}, {t} ची वेळ नोंदवली. टोकन {k}. फाटकावर हे दाखवा.",
+ msgNear:"टोकन {k} — {c} येथे तुमच्या पुढे तीन शेतकरी आहेत. वजन काट्याकडे या.",
+ msgCalled:"{c} येथे टोकन {k} आता बोलावले जात आहे.",
+ msgWeighed:"टोकन {k}: {q} क्विंटल, दर रु {r}/क्विंटल. देय रु {a}.",
+ msgPaid:"टोकन {k} साठी रु {a} तुमच्या खात्यात जमा. यूटीआर {u}.",
+ msgStorage:"{c} गोदाम {p}% भरले आहे. भरण्याआधी खात्री करा."
+}
+};
+function makeT(lang){
+  return (key, vars) => {
+    let s = (STR[lang] && STR[lang][key]) || STR.en[key] || key;
+    if(vars) Object.keys(vars).forEach(k => { s = s.split("{"+k+"}").join(vars[k]); });
+    return s.replace(/&amp;/g,"&");
+  };
+}
+
+/* ============================================================
+   2. ENCRYPTION LAYER  (Web Crypto API)
+   PIN  -> PBKDF2-SHA256, 150k iterations, per-user random salt
+   PII  -> AES-GCM 256, per-field random 96-bit IV
+   ============================================================ */
+const SC = window.crypto && window.crypto.subtle;
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const randHex = n => Array.from(crypto.getRandomValues(new Uint8Array(n))).map(b=>b.toString(16).padStart(2,"0")).join("");
+
+const KDF_ITER = 150000;
+
+async function hashPin(pin, saltHex){
+  const salt = saltHex || randHex(16);
+  const base = await SC.importKey("raw", enc.encode(pin), "PBKDF2", false, ["deriveBits"]);
+  const bits = await SC.deriveBits({name:"PBKDF2", salt:enc.encode(salt), iterations:KDF_ITER, hash:"SHA-256"}, base, 256);
+  return {salt, hash:b64(bits)};
+}
+async function verifyPin(pin, saltHex, expected){
+  const {hash} = await hashPin(pin, saltHex);
+  // constant-time-ish compare
+  if(hash.length !== expected.length) return false;
+  let diff = 0;
+  for(let i=0;i<hash.length;i++) diff |= hash.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0;
+}
+
+let AES_KEY = null;
+async function initKey(){
+  let keySalt = null;
+  try{ keySalt = localStorage.getItem("as.keysalt"); }catch(e){}
+  if(!keySalt){ keySalt = randHex(16); try{ localStorage.setItem("as.keysalt", keySalt); }catch(e){} }
+  // In production this master secret lives in a KMS / HSM on the server, never in the client.
+  const base = await SC.importKey("raw", enc.encode("annadata-setu::field-encryption::v1"), "PBKDF2", false, ["deriveKey"]);
+  AES_KEY = await SC.deriveKey(
+    {name:"PBKDF2", salt:enc.encode(keySalt), iterations:KDF_ITER, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]
+  );
+}
+async function encField(plain){
+  if(plain === undefined || plain === null || plain === "") return "";
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await SC.encrypt({name:"AES-GCM", iv}, AES_KEY, enc.encode(String(plain)));
+  return b64(iv) + ":" + b64(ct);
+}
+async function decField(blob){
+  if(!blob) return "";
+  try{
+    const [ivS, ctS] = blob.split(":");
+    const pt = await SC.decrypt({name:"AES-GCM", iv:unb64(ivS)}, AES_KEY, unb64(ctS));
+    return dec.decode(pt);
+  }catch(e){ return "—"; }
+}
+const maskTail = (s,n=4) => s ? "•".repeat(Math.max(0,s.length-n)) + s.slice(-n) : "";
+
+/* ============================================================
+   3. LOCAL STORE
+   ============================================================ */
+const DB_KEY = "as.db.v2";
+const TIME_SLOTS = ["08:00–10:00","10:00–12:00","12:00–14:00","14:00–16:00"];
+const todayISO = () => new Date().toISOString().slice(0,10);
+const dayList = () => Array.from({length:7},(_,i)=>{
+  const d = new Date(); d.setDate(d.getDate()+i); return d.toISOString().slice(0,10);
+});
+const fmtDate = (iso,lang)=> { try{ return new Date(iso+"T00:00:00").toLocaleDateString(lang==="en"?"en-IN":lang+"-IN",{day:"numeric",month:"short"}); }catch(e){ return iso; } };
+const inr = n => "₹" + Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:0});
+const uid = p => p + "_" + Math.random().toString(36).slice(2,9);
+
+function seed(){
+  return {
+    centres:[
+      {id:"c1", code:"HSN", name:"Hassan APMC Procurement Centre", district:"Hassan, Karnataka", crop:"Paddy", perSlot:12, svcMin:9, storageCap:14000, storageUsed:9100, rate:2320},
+      {id:"c2", code:"TMK", name:"Tumakuru Grain Yard", district:"Tumakuru, Karnataka", crop:"Ragi", perSlot:10, svcMin:11, storageCap:9000, storageUsed:2600, rate:4290},
+      {id:"c3", code:"MND", name:"Mandya Cooperative Centre", district:"Mandya, Karnataka", crop:"Paddy", perSlot:14, svcMin:8, storageCap:11000, storageUsed:10450, rate:2320}
+    ],
+    farmers:[], bookings:[], notes:[], serving:{}, seq:{},
+    admin:null
+  };
+}
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return seed();
+}
+function saveDB(db){
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(db)); }catch(e){}
+}
+
+/* ============================================================
+   4. SHARED HELPERS
+   ============================================================ */
+const ACTIVE = ["booked","arrived"];
+const centreById = (db,id) => db.centres.find(c=>c.id===id);
+const farmerById = (db,id) => db.farmers.find(f=>f.id===id);
+const slotIdx = s => TIME_SLOTS.indexOf(s);
+
+function queueFor(db, centreId, date){
+  return db.bookings
+    .filter(b => b.centreId===centreId && b.date===date && ACTIVE.includes(b.status))
+    .sort((a,b)=> (slotIdx(a.slot)-slotIdx(b.slot)) || (a.seq-b.seq));
+}
+function servingToken(db, centreId, date){ return db.serving[centreId+"|"+date] || null; }
+function slotCount(db, centreId, date, slot){
+  return db.bookings.filter(b=>b.centreId===centreId && b.date===date && b.slot===slot && b.status!=="cancelled").length;
+}
+function positionOf(db, booking){
+  const q = queueFor(db, booking.centreId, booking.date);
+  return q.findIndex(b=>b.id===booking.id);
+}
+function storagePct(c){ return Math.min(100, Math.round((c.storageUsed/c.storageCap)*100)); }
+
+function pushNote(db, farmerId, text, channel){
+  db.notes.unshift({id:uid("n"), farmerId, text, channel:channel||"sms", ts:Date.now(), read:false});
+  if(db.notes.length>400) db.notes.length = 400;
+}
+
+/* ============================================================
+   5. SMALL UI PIECES
+   ============================================================ */
+function Toast({msg}){ return msg ? <div className="toast" role="status">{msg}</div> : null; }
+
+function LangPicker({lang,setLang}){
+  return (
+    <select className="lang" value={lang} onChange={e=>setLang(e.target.value)} aria-label="Language">
+      {LANGS.map(l=><option key={l.code} value={l.code}>{l.label}</option>)}
+    </select>
+  );
+}
+
+function ThemeToggle({theme,setTheme,t}){
+  return <button className="icon-btn" title={t("theme")} aria-label={t("theme")}
+    onClick={()=>setTheme(theme==="dark"?"light":"dark")}>{theme==="dark"?"☀":"☾"}</button>;
+}
+
+function StorageBar({c,t}){
+  const p = storagePct(c);
+  return (
+    <div>
+      <div className="between small" style={{marginBottom:5}}>
+        <span className="muted">{t("storage")}</span>
+        <span><b className="mono">{p}%</b> <span className="muted">{t("used")}</span></span>
+      </div>
+      <div className="bar"><i className={p>90?"hot":p>70?"mid":""} style={{width:p+"%"}}/></div>
+      <div className="tiny muted" style={{marginTop:5}}>
+        {c.storageUsed.toLocaleString("en-IN")} / {c.storageCap.toLocaleString("en-IN")} {t("quintals")}
+      </div>
+      {p>90 && <div className="notice small" style={{marginTop:9}}>{t("storageWarn")}</div>}
+    </div>
+  );
+}
+
+function StatusChip({status,t}){
+  const map = {
+    booked:["info","statusBooked"], arrived:["info","statusArrived"], weighed:["warn","statusWeighed"],
+    accepted:["warn","statusPayPending"], paid:["ok","statusPaid"], cancelled:["bad","cancelled"], noshow:["bad","noShow"]
+  };
+  const [cls,key] = map[status] || ["","booked"];
+  return <span className={"tag "+cls}>{t(key)}</span>;
+}
+
+function StatusTrail({status,t}){
+  const order = ["booked","arrived","weighed","accepted","paid"];
+  const labels = {booked:"statusBooked",arrived:"statusArrived",weighed:"statusWeighed",accepted:"statusAccepted",paid:"statusPaid"};
+  const cur = order.indexOf(status);
+  return (
+    <div className="steps">
+      {order.map((s,i)=>(
+        <div key={s} className={"step "+(i<cur?"done":i===cur?"now":"")}>{t(labels[s])}</div>
+      ))}
+    </div>
+  );
+}
+
+/* ============================================================
+   6. LANDING
+   ============================================================ */
+function Landing({db,t,lang,go}){
+  const [cid,setCid] = useState(db.centres[0] ? db.centres[0].id : "");
+  const c = centreById(db,cid) || db.centres[0];
+  const date = todayISO();
+  const q = c ? queueFor(db,c.id,date) : [];
+  const serving = c ? servingToken(db,c.id,date) : null;
+  const wait = c ? q.length * c.svcMin : 0;
+  return (
+    <div className="wrap" style={{paddingTop:26}}>
+      <div className="grid" style={{gridTemplateColumns:"1fr",gap:22}}>
+        <div>
+          <h1 style={{maxWidth:16+"ch"}}>{t("heroTitle")}</h1>
+          <p className="muted" style={{maxWidth:"60ch",marginTop:12,fontSize:17}}>{t("heroBody")}</p>
+          <div className="row" style={{marginTop:18}}>
+            <button className="btn" onClick={()=>go("farmer")}>{t("farmerEntry")}</button>
+            <button className="btn ghost" onClick={()=>go("admin")}>{t("adminEntry")}</button>
+          </div>
+        </div>
+
+        <div className="board">
+          <div className="between" style={{marginBottom:14,position:"relative",zIndex:1}}>
+            <span className="board-label"><span className="pulse"/> {t("liveBoard")}</span>
+            <select className="lang" value={cid} onChange={e=>setCid(e.target.value)} aria-label={t("pickCentre")}>
+              {db.centres.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}
+            </select>
+          </div>
+          <div className="board-grid" style={{position:"relative",zIndex:1}}>
+            <div>
+              <div className="board-label">{t("nowServing")}</div>
+              <div className="board-num">{serving ? serving.token : "— — —"}</div>
+              <div className="board-label" style={{marginTop:8}}>{c && c.name}</div>
+            </div>
+            <div className="board-mini" style={{alignContent:"start"}}>
+              <div><b>{q.length}</b><span>{t("waiting")}</span></div>
+              <div><b>{wait}</b><span>{t("avgWait")} ({t("minutes")})</span></div>
+              <div><b>{c ? (c.storageCap-c.storageUsed).toLocaleString("en-IN") : 0}</b><span>{t("storageFree")} ({t("quintals")})</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid g4">
+          {[["f1","f1b"],["f2","f2b"],["f3","f3b"],["f4","f4b"]].map(([a,b])=>(
+            <div className="card" key={a}>
+              <h4 style={{marginBottom:6}}>{t(a)}</h4>
+              <p className="small muted" style={{margin:0}}>{t(b)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   7. FARMER AUTH
+   ============================================================ */
+function FarmerAuth({db,setDB,t,lang,setLang,onLogin,go}){
+  const [mode,setMode] = useState("login");
+  const [err,setErr] = useState("");
+  const [busy,setBusy] = useState(false);
+  const [f,setF] = useState({phone:"",pin:"",pin2:"",name:"",village:"",crop:"Paddy",acres:"",aadhaar:"",bank:""});
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+
+  async function doLogin(){
+    setErr("");
+    if(!/^\d{10}$/.test(f.phone)) return setErr(t("errPhone"));
+    if(!/^\d{4}$/.test(f.pin)) return setErr(t("errPin"));
+    setBusy(true);
+    let found = null;
+    for(const fr of db.farmers){
+      const ph = await decField(fr.phoneEnc);
+      if(ph === f.phone){ found = fr; break; }
+    }
+    if(!found){ setBusy(false); return setErr(t("errNoUser")); }
+    const ok = await verifyPin(f.pin, found.pinSalt, found.pinHash);
+    setBusy(false);
+    if(!ok) return setErr(t("errWrong"));
+    if(found.lang) setLang(found.lang);
+    onLogin(found.id);
+  }
+
+  async function doRegister(){
+    setErr("");
+    if(!f.name.trim()) return setErr(t("errName"));
+    if(!/^\d{10}$/.test(f.phone)) return setErr(t("errPhone"));
+    if(!/^\d{4}$/.test(f.pin)) return setErr(t("errPin"));
+    if(f.pin !== f.pin2) return setErr(t("errPinMatch"));
+    setBusy(true);
+    for(const fr of db.farmers){
+      if(await decField(fr.phoneEnc) === f.phone){ setBusy(false); return setErr(t("errExists")); }
+    }
+    const {salt,hash} = await hashPin(f.pin);
+    const rec = {
+      id:uid("f"), name:f.name.trim(), village:f.village.trim(), crop:f.crop, acres:f.acres, lang,
+      phoneEnc: await encField(f.phone), phoneMask: maskTail(f.phone,4),
+      aadhaarEnc: await encField(f.aadhaar), aadhaarMask: maskTail(f.aadhaar,4),
+      bankEnc: await encField(f.bank), bankMask: maskTail(f.bank,4),
+      pinSalt:salt, pinHash:hash, createdAt:Date.now()
+    };
+    setDB(d=>{ const n={...d, farmers:[...d.farmers, rec]}; return n; });
+    setBusy(false);
+    onLogin(rec.id);
+  }
+
+  return (
+    <div className="narrow" style={{paddingTop:26,maxWidth:520}}>
+      <button className="btn ghost sm" onClick={()=>go("landing")}>← {t("back")}</button>
+      <div className="card" style={{marginTop:14}}>
+        <h2>{mode==="login"?t("farmerLogin"):t("farmerRegister")}</h2>
+        <p className="small muted">{mode==="login" ? "Demo: 9845012301 · PIN 1111" : t("tagline")}</p>
+        <hr className="sep"/>
+        {mode==="register" && <>
+          <label className="field"><span>{t("name")}</span>
+            <input className="input" value={f.name} onChange={e=>set("name",e.target.value)} /></label>
+          <div className="grid g2">
+            <label className="field"><span>{t("village")}</span>
+              <input className="input" value={f.village} onChange={e=>set("village",e.target.value)} /></label>
+            <label className="field"><span>{t("crop")}</span>
+              <select className="input" value={f.crop} onChange={e=>set("crop",e.target.value)}>
+                <option>Paddy</option><option>Wheat</option><option>Ragi</option><option>Maize</option><option>Jowar</option>
+              </select></label>
+          </div>
+        </>}
+        <label className="field"><span>{t("phone")}</span>
+          <input className="input mono" inputMode="numeric" maxLength={10} value={f.phone}
+            onChange={e=>set("phone",e.target.value.replace(/\D/g,""))} placeholder="9876543210" /></label>
+        {mode==="register" && <div className="grid g2">
+          <label className="field"><span>{t("acres")}</span>
+            <input className="input" inputMode="decimal" value={f.acres} onChange={e=>set("acres",e.target.value)} /></label>
+          <label className="field"><span>{t("aadhaar")}</span>
+            <input className="input mono" inputMode="numeric" maxLength={12} value={f.aadhaar}
+              onChange={e=>set("aadhaar",e.target.value.replace(/\D/g,""))} /></label>
+        </div>}
+        {mode==="register" &&
+          <label className="field"><span>{t("bank")}</span>
+            <input className="input mono" value={f.bank} onChange={e=>set("bank",e.target.value)} /></label>}
+        <div className="grid g2">
+          <label className="field"><span>{t("pin")}</span>
+            <input className="input mono" type="password" inputMode="numeric" maxLength={4} value={f.pin}
+              onChange={e=>set("pin",e.target.value.replace(/\D/g,""))} /></label>
+          {mode==="register" &&
+            <label className="field"><span>{t("confirmPin")}</span>
+              <input className="input mono" type="password" inputMode="numeric" maxLength={4} value={f.pin2}
+                onChange={e=>set("pin2",e.target.value.replace(/\D/g,""))} /></label>}
+        </div>
+        {err && <div className="notice small" style={{marginBottom:12,borderColor:"var(--bad)",background:"var(--bad-soft)",color:"var(--bad)"}}>{err}</div>}
+        <button className="btn block" disabled={busy} onClick={mode==="login"?doLogin:doRegister}>
+          {busy ? "…" : (mode==="login"?t("login"):t("createAccount"))}
+        </button>
+        <p className="small" style={{textAlign:"center",marginTop:12,marginBottom:0}}>
+          <a href="#" onClick={e=>{e.preventDefault();setErr("");setMode(mode==="login"?"register":"login");}}>
+            {mode==="login"?t("newHere"):t("haveAccount")}
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   8. FARMER APP
+   ============================================================ */
+function FarmerApp({db,setDB,t,lang,me,toast,tick}){
+  const [tab,setTab] = useState("home");
+  const mine = db.bookings.filter(b=>b.farmerId===me.id).sort((a,b)=>b.createdAt-a.createdAt);
+  const active = mine.find(b=>ACTIVE.includes(b.status));
+  const notes = db.notes.filter(n=>n.farmerId===me.id || n.farmerId==="all");
+  const unread = notes.filter(n=>!n.read).length;
+
+  const tabs = [["home",t("home")],["book",t("book")],["queue",t("queue")],["status",t("status")],
+                ["alerts",t("alerts")+(unread?" ("+unread+")":"")],["profile",t("profile")]];
+
+  return (
+    <div className="wrap" style={{paddingTop:16}}>
+      <div className="tabs" role="tablist">
+        {tabs.map(([k,l])=>(
+          <button key={k} role="tab" aria-selected={tab===k} onClick={()=>setTab(k)}>{l}</button>
+        ))}
+      </div>
+      <div style={{marginTop:16}}>
+        {tab==="home" && <FarmerHome db={db} t={t} lang={lang} me={me} active={active} setTab={setTab}/>}
+        {tab==="book" && <BookSlot db={db} setDB={setDB} t={t} lang={lang} me={me} toast={toast} setTab={setTab}/>}
+        {tab==="queue" && <LiveQueue db={db} setDB={setDB} t={t} lang={lang} active={active} setTab={setTab} toast={toast}/>}
+        {tab==="status" && <MyStatus db={db} t={t} lang={lang} mine={mine}/>}
+        {tab==="alerts" && <Alerts db={db} setDB={setDB} t={t} notes={notes}/>}
+        {tab==="profile" && <Profile db={db} t={t} me={me}/>}
+      </div>
+    </div>
+  );
+}
+
+function FarmerHome({db,t,lang,me,active,setTab}){
+  const c = active ? centreById(db,active.centreId) : null;
+  const pos = active ? positionOf(db,active) : -1;
+  return (
+    <div className="stack">
+      <div>
+        <h2>{t("greet")}, {me.name}</h2>
+        <p className="muted small">{me.village} · {me.crop} · {me.acres} {t("acres")}</p>
+      </div>
+      {active ? (
+        <div className="card">
+          <div className="between" style={{marginBottom:12}}>
+            <h3>{t("yourNextVisit")}</h3><StatusChip status={active.status} t={t}/>
+          </div>
+          <div className="slip">
+            <div className="between">
+              <div>
+                <div className="tiny muted">{t("yourToken")}</div>
+                <div className="tok">{active.token}</div>
+                <div className="small muted" style={{marginTop:4}}>{t("showAtGate")}</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div className="small"><b>{fmtDate(active.date,lang)}</b></div>
+                <div className="small mono">{active.slot}</div>
+                <div className="tiny muted" style={{maxWidth:"22ch"}}>{c && c.name}</div>
+              </div>
+            </div>
+          </div>
+          <div className="grid g3" style={{marginTop:14}}>
+            <div className="sunk"><div className="tiny muted">{t("position")}</div><b className="mono" style={{fontSize:22}}>{pos>=0?pos+1:"—"}</b></div>
+            <div className="sunk"><div className="tiny muted">{t("estWait")}</div><b className="mono" style={{fontSize:22}}>{pos>=0&&c?pos*c.svcMin:0} <span style={{fontSize:13}}>{t("minutes")}</span></b></div>
+            <div className="sunk"><div className="tiny muted">{t("rate")}</div><b className="mono" style={{fontSize:22}}>{c?inr(c.rate):"—"}</b></div>
+          </div>
+          <div className="row" style={{marginTop:14}}>
+            <button className="btn sm" onClick={()=>setTab("queue")}>{t("queue")}</button>
+            <button className="btn ghost sm" onClick={()=>setTab("status")}>{t("status")}</button>
+          </div>
+        </div>
+      ) : (
+        <div className="card">
+          <h3>{t("noBooking")}</h3>
+          <p className="small muted">{t("f1b")}</p>
+          <button className="btn" onClick={()=>setTab("book")}>{t("bookNow")}</button>
+        </div>
+      )}
+      <div className="grid g3">
+        {db.centres.map(c2=>(
+          <div className="card tight" key={c2.id}>
+            <h4>{c2.name}</h4>
+            <p className="tiny muted" style={{margin:"2px 0 10px"}}>{c2.district} · {c2.crop} · {inr(c2.rate)}/{t("quintals")}</p>
+            <StorageBar c={c2} t={t}/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BookSlot({db,setDB,t,lang,me,toast,setTab}){
+  const [cid,setCid] = useState(db.centres[0]?db.centres[0].id:"");
+  const [date,setDate] = useState(todayISO());
+  const [slot,setSlot] = useState("");
+  const [qty,setQty] = useState("");
+  const [err,setErr] = useState("");
+  const c = centreById(db,cid);
+
+  function confirm(){
+    setErr("");
+    if(!slot) return setErr(t("errSlot"));
+    if(!qty || Number(qty)<=0) return setErr(t("errQty"));
+    if(slotCount(db,cid,date,slot) >= c.perSlot) return setErr(t("errFull"));
+    setDB(d=>{
+      const n = {...d, bookings:[...d.bookings], notes:[...d.notes], seq:{...d.seq}};
+      const key = cid+"|"+date;
+      const seq = (n.seq[key]||0)+1; n.seq[key]=seq;
+      const dd = date.slice(8,10)+date.slice(5,7);
+      const token = c.code+"-"+dd+"-"+String(seq).padStart(3,"0");
+      const bk = {id:uid("b"), farmerId:me.id, centreId:cid, date, slot, seq, token,
+        status:"booked", expQty:Number(qty), rate:c.rate, createdAt:Date.now()};
+      n.bookings.push(bk);
+      pushNote(n, me.id, makeT(me.lang||lang)("msgBooked",{c:c.name,d:fmtDate(date,me.lang||lang),t:slot,k:token}), "sms");
+      return n;
+    });
+    toast(t("bookingDone"));
+    setTab("home");
+  }
+
+  return (
+    <div className="stack">
+      <h2>{t("bookAt")}</h2>
+      <div className="card">
+        <label className="field"><span>{t("step1")}</span>
+          <select className="input" value={cid} onChange={e=>{setCid(e.target.value);setSlot("");}}>
+            {db.centres.map(x=><option key={x.id} value={x.id}>{x.name} — {x.crop}</option>)}
+          </select></label>
+        {c && <StorageBar c={c} t={t}/>}
+      </div>
+      <div className="card">
+        <span className="small muted" style={{fontWeight:500}}>{t("step2")}</span>
+        <div className="row" style={{marginTop:8,gap:8}}>
+          {dayList().map(d=>(
+            <button key={d} className="slot" style={{width:"auto",minWidth:76,textAlign:"center"}}
+              aria-pressed={date===d} onClick={()=>{setDate(d);setSlot("");}}>
+              <b>{fmtDate(d,lang)}</b>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="card">
+        <span className="small muted" style={{fontWeight:500}}>{t("step3")}</span>
+        <div className="grid g2" style={{marginTop:8}}>
+          {TIME_SLOTS.map(s=>{
+            const used = slotCount(db,cid,date,s), left = (c?c.perSlot:0)-used, full = left<=0;
+            return (
+              <button key={s} className="slot" aria-pressed={slot===s} disabled={full} onClick={()=>setSlot(s)}>
+                <b className="mono">{s}</b>
+                <div className="tiny muted">{full ? t("slotFull") : left+" "+t("slotsLeft")}</div>
+                <div className="bar" style={{marginTop:6}}><i className={left<=2?"hot":left<=5?"mid":""} style={{width:(c?(used/c.perSlot*100):0)+"%"}}/></div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="card">
+        <label className="field"><span>{t("expectedQty")}</span>
+          <input className="input mono" inputMode="decimal" value={qty} onChange={e=>setQty(e.target.value.replace(/[^\d.]/g,""))} placeholder="0"/></label>
+        {err && <div className="notice small" style={{marginBottom:12,borderColor:"var(--bad)",background:"var(--bad-soft)",color:"var(--bad)"}}>{err}</div>}
+        <button className="btn block" onClick={confirm}>{t("confirmBooking")}</button>
+      </div>
+    </div>
+  );
+}
+
+function LiveQueue({db,setDB,t,lang,active,setTab,toast}){
+  const [cid,setCid] = useState(active?active.centreId:(db.centres[0]?db.centres[0].id:""));
+  const date = active?active.date:todayISO();
+  const c = centreById(db,cid);
+  const q = queueFor(db,cid,date);
+  const serving = servingToken(db,cid,date);
+  const pos = active && active.centreId===cid ?
